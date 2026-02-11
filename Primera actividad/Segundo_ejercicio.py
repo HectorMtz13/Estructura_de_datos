@@ -1,22 +1,3 @@
-#Actividad de python
-Toneladas = [12, 24,16,15,20,18,6,10,12,11,15,12]
-
-#   Promedio anual a)
-#Sumas todos los datos del arreglo y dividirlos entre el total de los elementos 
-Promedio_anual = sum(Toneladas) / len(Toneladas)
-print(Promedio_anual)
-
-# B)
-#Realizar una comparacion de todos los valores vs promedio integrar un arreglo con todos los valores superiores al promedio 
-Superior = [tonelada for tonelada in Toneladas if tonelada > Promedio_anual]
-superior1 = (len(Superior))
-print(superior1)
-# c)
-Inferior = [tonelada for tonelada in Toneladas if tonelada <  Promedio_anual]
-inferior1 = len(Inferior)
-print(Inferior)
-
-
 #_________________________________________2da Practica___________________________________________________
 
 # En un arreglo unidimensional se almacena las calificaciones finales de n alumnos de un curso universitario
@@ -50,6 +31,3 @@ print(f"Porcentaje de alumnos Reprobados es : {Porcentaje_Reprobados}% ")
 Alumnos_Mayor = [alumno for alumno in calificaciones if alumno >= 8.0]
 Num_Alumnos_8 = len(Alumnos_Mayor)
 print(f"La cantidad de alumnos con calificaicon mayor a 8.0 es : {Num_Alumnos_8}")
-
-
-
