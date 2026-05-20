@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Estructura de Datos</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Arial, sans-serif; background:#f0f0f0; color:#333; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+  /* header */
+  #header { background:#4a90d9; border-bottom:1px solid #3a7bc8; padding:10px 16px; display:flex; align-items:center; gap:10px; }
+  #header h1 { font-size:15px; color:#fff; font-weight:bold; }
+  #header span { font-size:11px; color:#cce4ff; }
+
+  /* layout */
+  #main { display:flex; flex:1; overflow:hidden; }
+
+  /* sidebar */
+  #sidebar { width:220px; background:#fff; border-right:2px solid #ddd; overflow-y:auto; flex-shrink:0; }
+  #sidebar::-webkit-scrollbar { width:4px; }
+  #sidebar::-webkit-scrollbar-thumb { background:#ccc; }
+  .grupo { padding:10px 12px 4px; font-size:10px; color:#999; text-transform:uppercase; letter-spacing:1px; background:#f7f7f7; border-bottom:1px solid #eee; }
+  .item { padding:8px 12px; font-size:13px; color:#555; cursor:pointer; display:flex; justify-content:space-between; align-items:center; border-left:3px solid transparent; border-bottom:1px solid #f0f0f0; }
+  .item:hover { background:#f0f7ff; color:#333; }
+  .item.sel { background:#e8f4fd; color:#1a6fcc; border-left-color:#87ceeb; font-weight:bold; }
+  .badge { font-size:9px; padding:2px 6px; border-radius:10px; font-weight:bold; }
+  .b-interactivo { background:#87ceeb; color:#1a5a8a; }
+
+  /* panel derecho */
+  #panel { flex:1; display:flex; overflow:hidden; }
+
+  /* codigo */
+  #col-codigo { flex:1; display:flex; flex-direction:column; border-right:2px solid #ddd; overflow:hidden; }
+  #col-codigo .titulo { background:#f7f7f7; border-bottom:1px solid #ddd; padding:8px 14px; font-size:11px; color:#999; display:flex; justify-content:space-between; }
+  #col-codigo .titulo span { color:#aaa; }
+  #codigo-area { flex:1; overflow-y:auto; padding:14px; background:#fff; }
+  #codigo-area::-webkit-scrollbar { width:4px; }
+  #codigo-area::-webkit-scrollbar-thumb { background:#ddd; }
+  #codigo-pre { font-size:12.5px; line-height:1.8; white-space:pre-wrap; word-break:break-word; color:#333; font-family:Consolas,monospace; }
+  .ln { color:#ccc; user-select:none; display:inline-block; min-width:26px; text-align:right; margin-right:12px; font-size:11px; }
+
+  /* output / run */
+  #col-output { width:420px; display:flex; flex-direction:column; overflow:hidden; background:#fff; }
+  #col-output .titulo { background:#f7f7f7; border-bottom:1px solid #ddd; padding:8px 14px; font-size:11px; color:#999; }
+
+  #info-prog { padding:12px 14px; border-bottom:1px solid #eee; }
+  #info-prog .nombre { font-size:14px; color:#222; margin-bottom:3px; font-weight:bold; }
+  #info-prog .desc { font-size:11px; color:#888; }
+  #info-prog .archivo { font-size:10px; color:#bbb; margin-top:3px; font-family:Consolas,monospace; }
+
+  #zona-input { padding:10px 14px; border-bottom:1px solid #eee; display:none; }
+  #zona-input label { font-size:11px; color:#666; display:block; margin-bottom:5px; font-weight:bold; }
+  #zona-input textarea { width:100%; height:70px; background:#f9f9f9; border:1px solid #ccc; color:#333; font-family:Consolas,monospace; font-size:12px; padding:6px; resize:vertical; outline:none; border-radius:4px; }
+  #zona-input textarea:focus { border-color:#4a90d9; }
+  #zona-input .hint { font-size:10px; color:#aaa; margin-top:4px; white-space:pre-wrap; }
+  #zona-input .ej { font-size:10px; color:#4a90d9; cursor:pointer; margin-top:3px; display:none; }
+  #zona-input .ej:hover { text-decoration:underline; }
+
+  #btn-correr { margin:10px 14px; background:#4a90d9; color:#fff; border:none; padding:8px 16px; cursor:pointer; font-size:13px; border-radius:4px; width:calc(100% - 28px); font-weight:bold; }
+  #btn-correr:hover { background:#3a7bc8; }
+  #btn-correr:disabled { opacity:.5; cursor:not-allowed; }
+
+  /* terminal */
+  #terminal { flex:1; background:#1e1e1e; overflow:hidden; display:flex; flex-direction:column; margin:0 14px 14px; border:1px solid #ddd; border-radius:4px; }
+  #term-bar { background:#2d2d2d; padding:6px 10px; display:flex; align-items:center; gap:5px; border-bottom:1px solid #444; }
+  .dot { width:9px; height:9px; border-radius:50%; }
+  .dot-r{background:#ff5f57;}.dot-a{background:#febc2e;}.dot-g{background:#28c840;}
+  #term-archivo { margin-left:8px; font-size:10px; color:#888; font-family:Consolas,monospace; }
+  #term-out { flex:1; overflow-y:auto; padding:12px; font-size:12px; line-height:1.8; white-space:pre-wrap; color:#d4d4d4; font-family:Consolas,monospace; }
+  #term-out::-webkit-scrollbar { width:3px; }
+  #term-out::-webkit-scrollbar-thumb { background:#444; }
+  .t-ok  { color:#6dbf6d; }
+  .t-err { color:#f47067; }
+  .t-sys { color:#666; font-style:italic; }
+
+  /* interactivo */
+  #col-viz { display:none; width:420px; flex-direction:column; overflow-y:auto; padding:14px; background:#f9f9f9; }
+  #col-viz::-webkit-scrollbar { width:4px; }
+  #col-viz::-webkit-scrollbar-thumb { background:#ccc; }
+  .viz-titulo { font-size:14px; color:#222; margin-bottom:4px; font-weight:bold; }
+  .viz-desc { font-size:11px; color:#888; margin-bottom:12px; }
+  canvas { background:#fff; border:1px solid #ddd; border-radius:4px; display:block; width:100%; }
+  .controles { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:8px 0; }
+  .controles input[type=text], .controles input[type=number] { background:#fff; border:1px solid #ccc; color:#333; font-family:Consolas,monospace; font-size:12px; padding:4px 8px; width:80px; outline:none; border-radius:4px; }
+  .controles input[type=range] { width:100px; }
+  .controles select { background:#fff; border:1px solid #ccc; color:#333; font-size:12px; padding:4px 6px; outline:none; border-radius:4px; }
+  .btn { background:#fff; border:1px solid #ccc; color:#555; padding:5px 12px; cursor:pointer; font-size:12px; border-radius:4px; }
+  .btn:hover { background:#f0f0f0; color:#333; }
+  .btn.verde { background:#e8f5e9; border-color:#66bb6a; color:#2e7d32; }
+  .btn.rojo  { background:#ffebee; border-color:#ef5350; color:#c62828; }
+  .btn.azul  { background:#e3f2fd; border-color:#42a5f5; color:#1565c0; }
+  .info-fila { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+  .info-caja { background:#fff; border:1px solid #ddd; border-radius:4px; padding:6px 12px; text-align:center; min-width:70px; }
+  .info-caja .v { font-size:18px; font-weight:bold; color:#4a90d9; }
+  .info-caja .l { font-size:9px; color:#aaa; margin-top:1px; }
+  .log { background:#f9f9f9; border:1px solid #eee; border-radius:4px; padding:8px; font-size:11px; max-height:80px; overflow-y:auto; margin-top:8px; font-family:Consolas,monospace; }
+  .log-ok { color:#2e7d32; } .log-err { color:#c62828; } .log-info { color:#1565c0; }
+
+  /* tabs para cambiar entre ejecutar e interactivo */
+  #tabs-output { display:flex; background:#1c1c1c; border-bottom:1px solid #2a2a2a; }
+  .tab-btn { padding:8px 14px; font-size:11px; color:#555; cursor:pointer; border-bottom:2px solid transparent; font-family:Consolas,monospace; }
+  .tab-btn:hover { color:#888; }
+  .tab-btn.on { color:#6dbf6d; border-bottom-color:#6dbf6d; }
+
+  /* pantalla inicial */
+  #pantalla-inicio { display:flex; align-items:center; justify-content:center; flex:1; color:#333; font-size:13px; flex-direction:column; gap:6px; }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>// Estructura de Datos</h1>
+  <span id="header-archivo">selecciona un programa del menu</span>
+</div>
+
+<div id="main">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    {% set ca = namespace(val="") %}
+    {% for p in programas %}
+      {% if p.carpeta != ca.val %}
+        {% set ca.val = p.carpeta %}
+        <div class="grupo">{{ p.carpeta }}</div>
+      {% endif %}
+      <div class="item" id="item-{{p.id}}" onclick="seleccionar('{{p.id}}')">
+        <span>{{ p.nombre }}</span>
+        {% if p.id in ['hanoi','recorridos','arbolitos','bfs','prim','cola_circ','pila_ops','asientos','colas','bicola'] %}<span class="badge b-interactivo">interactivo</span>{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- PANEL -->
+  <div id="panel">
+
+    <!-- COLUMNA CODIGO -->
+    <div id="col-codigo">
+      <div class="titulo">
+        <span>codigo fuente</span>
+        <span id="label-archivo">—</span>
+      </div>
+      <div id="codigo-area">
+        <div id="pantalla-inicio-codigo" style="display:flex;align-items:center;justify-content:center;height:100%;color:#333;flex-direction:column;gap:6px;">
+          <div style="font-size:24px">&#8592;</div>
+          <div>selecciona un programa</div>
+        </div>
+        <pre id="codigo-pre" style="display:none"></pre>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: EJECUTAR / INTERACTIVO -->
+    <div id="col-output">
+      <div id="tabs-output">
+        <div class="tab-btn on" id="tab-ejecutar" onclick="cambiarTab('ejecutar')">ejecutar</div>
+        <div class="tab-btn" id="tab-viz" onclick="cambiarTab('viz')">interactivo</div>
+      </div>
+
+      <!-- EJECUTAR -->
+      <div id="seccion-ejecutar" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+        <div id="pantalla-inicio-output" style="display:flex;align-items:center;justify-content:center;flex:1;color:#333;font-size:12px;">
+          selecciona un programa del menu
+        </div>
+        <div id="contenido-output" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+          <div id="info-prog">
+            <div class="nombre" id="prog-nombre">—</div>
+            <div class="desc"   id="prog-desc">—</div>
+            <div class="archivo" id="prog-archivo">—</div>
+          </div>
+          <div id="zona-input">
+            <label>inputs del programa (uno por linea):</label>
+            <textarea id="ta-inputs" placeholder="escribe los valores aqui..."></textarea>
+            <div class="hint" id="hint-texto"></div>
+            <div class="ej" id="ej-link" onclick="ponerEjemplo()">usar ejemplo de prueba</div>
+          </div>
+          <button id="btn-correr" onclick="correr()">&#9654; correr</button>
+          <div id="terminal">
+            <div id="term-bar">
+              <div class="dot dot-r"></div><div class="dot dot-a"></div><div class="dot dot-g"></div>
+              <span id="term-archivo">output</span>
+            </div>
+            <div id="term-out"><span class="t-sys">// output del programa aparece aqui</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTERACTIVO -->
+      <div id="seccion-viz" style="display:none;flex:1;overflow-y:auto;padding:14px;">
+        <div id="viz-contenido">
+          <div style="color:#333;font-size:12px;">este programa no tiene demo interactivo — usalo desde el tab "ejecutar"</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const PROGS = {{ programas | tojson }};
+let actual = null;
+let animT = null;
+
+// ── seleccionar programa ──
+async function seleccionar(id) {
+  if (animT) { clearInterval(animT); animT = null; }
+  actual = PROGS.find(p => p.id === id);
+  if (!actual) return;
+
+  document.querySelectorAll('.item').forEach(e => e.classList.remove('sel'));
+  document.getElementById('item-' + id).classList.add('sel');
+  document.getElementById('header-archivo').textContent = actual.carpeta + ' / ' + actual.archivo;
+
+  await cargarCodigo();
+  prepararEjecutar();
+  prepararViz();
+  cambiarTab('ejecutar');
+}
+
+// ── cargar codigo ──
+// pide el codigo al servidor
+async function cargarCodigo() {
+  document.getElementById('pantalla-inicio-codigo').style.display = 'none';
+  const pre = document.getElementById('codigo-pre');
+  pre.style.display = 'block';
+  pre.innerHTML = '<span class="t-sys">cargando...</span>';
+  try {
+    const r = await fetch('/codigo/' + actual.id);
+    const d = await r.json();
+    if (d.error) { pre.innerHTML = '<span class="t-err">Error: ' + d.error + '</span>'; return; }
+    document.getElementById('label-archivo').textContent = actual.archivo;
+    // mostramos el codigo tal cual, sin modificarlo
+    // solo escapamos los caracteres especiales de HTML para que se vea bien
+    const codigoEscapado = d.codigo
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    const lineas = codigoEscapado.split('\n');
+    pre.innerHTML = lineas.map((l, i) =>
+      '<span class="ln">' + (i+1) + '</span>' + l
+    ).join('\n');
+  } catch(e) {
+    pre.innerHTML = '<span class="t-err">no se pudo cargar el archivo</span>';
+  }
+}
+
+// ── colorear python basico ──
+function colorear(l) {
+  const kws = ['def','class','if','elif','else','for','while','in','return','import','from',
+    'not','and','or','True','False','None','break','continue','print','input','len',
+    'range','self','pass','try','except','with','as','append','pop','int','float','str','set'];
+  l = l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  l = l.replace(/(#.*)$/, '<span class="c">$1</span>');
+  l = l.replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, '<span class="s">$1</span>');
+  l = l.replace(/\b(\d+\.?\d*)\b/g, '<span class="n">$1</span>');
+  l = l.replace(/\b([A-Z][a-zA-Z0-9_]+)\b/g, '<span class="cl">$1</span>');
+  l = l.replace(/\b([a-z_][a-zA-Z0-9_]*)\s*(?=\()/g, '<span class="f">$1</span>');
+  l = l.replace(new RegExp('\\b('+kws.join('|')+')\\b','g'), '<span class="k">$1</span>');
+  return l;
+}
+
+// ── preparar seccion ejecutar ──
+// prepara el panel de ejecucion
+function prepararEjecutar() {
+  document.getElementById('pantalla-inicio-output').style.display = 'none';
+  document.getElementById('contenido-output').style.display = 'flex';
+  document.getElementById('prog-nombre').textContent  = actual.nombre;
+  document.getElementById('prog-desc').textContent    = '';
+  document.getElementById('prog-archivo').textContent = actual.carpeta + ' / ' + actual.archivo;
+  document.getElementById('term-archivo').textContent = actual.archivo;
+  document.getElementById('term-out').innerHTML = '<span class="t-sys">// presiona "correr" para ejecutar el programa</span>';
+
+  const zi = document.getElementById('zona-input');
+  const ta = document.getElementById('ta-inputs');
+  const hint = document.getElementById('hint-texto');
+  const ej = document.getElementById('ej-link');
+
+  if (actual.tipo === 'input' || actual.tipo === 'menu') {
+    zi.style.display = 'block';
+    ta.value = '';
+    hint.textContent = actual.hint || '';
+    ej.style.display = actual.ejemplo ? 'block' : 'none';
+  } else {
+    zi.style.display = 'none';
+  }
+}
+
+// rellena el textarea con ejemplo
+function ponerEjemplo() {
+  document.getElementById('ta-inputs').value = (actual.ejemplo || '').replace(/\\n/g, '\n');
+}
+
+// ── correr programa ──
+// manda el programa al servidor
+async function correr() {
+  if (!actual) return;
+  const btn = document.getElementById('btn-correr');
+  const out = document.getElementById('term-out');
+  btn.disabled = true;
+  btn.textContent = '... ejecutando';
+  out.innerHTML = '<span class="t-sys">// corriendo ' + actual.archivo + '...</span>\n';
+
+  try {
+    const r = await fetch('/correr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: actual.id, inputs: document.getElementById('ta-inputs').value })
+    });
+    const d = await r.json();
+    if (d.error) {
+      out.innerHTML += '\n<span class="t-err">ERROR: ' + esc(d.error) + '</span>';
+    } else {
+      if (d.stdout) out.innerHTML += '\n<span class="t-ok">' + esc(d.stdout) + '</span>';
+      if (d.stderr) out.innerHTML += '\n<span class="t-err">stderr:\n' + esc(d.stderr) + '</span>';
+      out.innerHTML += '\n<span class="t-sys">// codigo de salida: ' + d.code + (d.code === 0 ? ' (ok)' : ' (error)') + '</span>';
+    }
+  } catch(e) {
+    out.innerHTML += '\n<span class="t-err">error de conexion: ' + e.message + '</span>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '▶ correr';
+    out.scrollTop = out.scrollHeight;
+  }
+}
+
+// escapa caracteres especiales HTML
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── tabs ──
+function cambiarTab(t) {
+  document.getElementById('seccion-ejecutar').style.display = t === 'ejecutar' ? 'flex' : 'none';
+  document.getElementById('seccion-viz').style.display      = t === 'viz'      ? 'flex' : 'none';
+  document.getElementById('tab-ejecutar').classList.toggle('on', t === 'ejecutar');
+  document.getElementById('tab-viz').classList.toggle('on', t === 'viz');
+}
+
+// ── interactivos ──
+const DEMOS = {
+  hanoi:      vizHanoi,
+  recorridos: vizArboles,
+  arbolitos:  vizBST,
+  bfs:        vizBFS,
+  prim:       vizPrim,
+  cola_circ:  vizColaCircular,
+  pila_ops:   vizPila,
+  asientos:   vizAsientos,
+  colas:      vizColas,
+  bicola:     vizBicola,
+};
+
+// carga el demo interactivo correcto
+function prepararViz() {
+  const cont = document.getElementById('viz-contenido');
+  if (DEMOS[actual.id]) {
+    cont.innerHTML = '';
+    DEMOS[actual.id](cont);
+  } else {
+    cont.innerHTML = '<div style="color:#333;font-size:12px;padding:8px 0;">este programa no tiene demo interactivo<br>usalo desde el tab "ejecutar"</div>';
+  }
+}
+
+
+// demo visual torre de hanoi
+function vizHanoi(el) {
+  let N=5, moves=[], step=0, torres={A:[],B:[],C:[]};
+
+  function gen(n,de,aux,a) {
+    if (n===1) { moves.push({d:1,de,a}); return; }
+    gen(n-1,de,a,aux); moves.push({d:n,de,a}); gen(n-1,aux,de,a);
+  }
+  function init() {
+    torres={A:[],B:[],C:[]}; for(let i=N;i>=1;i--) torres.A.push(i);
+    moves=[]; gen(N,'A','B','C'); step=0;
+  }
+  function aplicar(m) { torres[m.a].push(torres[m.de].pop()); }
+
+  function dibujar() {
+    const cv = document.getElementById('hanoi-cv'); if (!cv) return;
+    const ctx = cv.getContext('2d'), W=cv.width, H=cv.height;
+    ctx.clearRect(0,0,W,H);
+    const baseY=H-25, poleH=H-55, pX=[W*.2,W*.5,W*.8];
+    const last = step>0 ? moves[step-1] : null;
+    // base
+    ctx.fillStyle='#5a3e10'; ctx.fillRect(20,baseY,W-40,8);
+    ['A','B','C'].forEach((nm,i) => {
+      // poste
+      ctx.fillStyle='#7a5e20'; ctx.fillRect(pX[i]-4,baseY-poleH,8,poleH);
+      // etiqueta
+      ctx.fillStyle='#444'; ctx.font='bold 12px Consolas'; ctx.textAlign='center';
+      ctx.fillText(nm, pX[i], H-7);
+      // discos
+      torres[nm].forEach((d,di) => {
+        const dw=18+d*(W*.09), dh=16, dx=pX[i]-dw/2, dy=baseY-8-di*(dh+2);
+        const isUltimo = last && last.a===nm && di===torres[nm].length-1;
+        // color por numero de disco
+        const colores = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c'];
+        ctx.fillStyle = isUltimo ? '#fff' : colores[(d-1) % colores.length];
+        ctx.globalAlpha = isUltimo ? 1 : 0.85;
+        ctx.beginPath(); ctx.roundRect(dx,dy,dw,dh,3); ctx.fill();
+        ctx.globalAlpha=1;
+        ctx.strokeStyle='rgba(0,0,0,.3)'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.roundRect(dx,dy,dw,dh,3); ctx.stroke();
+        ctx.fillStyle='rgba(0,0,0,.7)'; ctx.font='bold 10px Consolas';
+        ctx.textAlign='center'; ctx.fillText(d, pX[i], dy+dh/2+4);
+      });
+    });
+  }
+
+  function render() {
+    const total = Math.pow(2,N)-1;
+    const last  = step>0 ? moves[step-1] : null;
+    el.innerHTML = `
+      <div class="viz-titulo">Torre de Hanoi</div>
+      <div class="viz-desc">mueve todos los discos de A a C. discos: <strong id="hN">${N}</strong> | total movimientos: ${total}</div>
+      <div class="controles">
+        <span style="font-size:11px;color:#555">discos:</span>
+        <input type="range" id="h-slider" min="2" max="7" value="${N}" style="width:100px">
+        <button class="btn" onclick="hReset()">reset</button>
+      </div>
+      <canvas id="hanoi-cv" height="180" style="margin-bottom:8px"></canvas>
+      <div class="info-fila">
+        <div class="info-caja"><div class="v">${step}</div><div class="l">paso</div></div>
+        <div class="info-caja"><div class="v">${total}</div><div class="l">total</div></div>
+        <div class="info-caja" style="min-width:120px"><div class="v" style="font-size:12px;color:${last?'#f1c40f':'#333'}">${last?'disco '+last.d+': '+last.de+' → '+last.a:'—'}</div><div class="l">ultimo mov</div></div>
+      </div>
+      <div class="controles" style="margin-top:6px">
+        <button class="btn" onclick="hPrev()">&#9664; ant</button>
+        <button class="btn verde" onclick="hNext()">sig &#9654;</button>
+        <button class="btn azul"  onclick="hAuto()">auto &#9654;&#9654;</button>
+        <button class="btn" onclick="hFinal()">final</button>
+      </div>
+      <div style="font-size:10px;color:${step>=total?'#6dbf6d':'#333'};margin-top:4px">${step>=total?'completado!':'faltan '+(total-step)+' movimientos'}</div>
+    `;
+    // canvas width despues de render
+    const cv = document.getElementById('hanoi-cv');
+    cv.width = cv.offsetWidth || 380;
+    dibujar();
+    document.getElementById('h-slider').oninput = function() {
+      N = parseInt(this.value); document.getElementById('hN').textContent = N;
+      if(animT){clearInterval(animT);animT=null;} init(); render();
+    };
+  }
+
+  window.hReset  = () => { if(animT){clearInterval(animT);animT=null;} init(); render(); };
+  window.hNext   = () => { if(step<moves.length){aplicar(moves[step]);step++;render();} };
+  window.hFinal  = () => { init(); moves.forEach(m=>{aplicar(m);step++;}); render(); };
+  window.hPrev   = () => {
+    if(step>0){const s=step-1;init();for(let i=0;i<s;i++){aplicar(moves[i]);step++;}render();}
+  };
+  window.hAuto   = () => {
+    if(animT){clearInterval(animT);animT=null;return;}
+    if(step>=moves.length){init();render();}
+    animT=setInterval(()=>{if(step>=moves.length){clearInterval(animT);animT=null;render();return;}aplicar(moves[step]);step++;render();},350);
+  };
+  init(); render();
+}
+
+
+// demo recorridos del arbol
+function vizArboles(el) {
+  class Nodo{constructor(v){this.valor=v;this.izquierdo=null;this.derecho=null;}}
+  function agregar(r,d){if(d<r.valor){if(!r.izquierdo)r.izquierdo=new Nodo(d);else agregar(r.izquierdo,d);}else{if(!r.derecho)r.derecho=new Nodo(d);else agregar(r.derecho,d);}}
+  function preorden(n,a){if(!n)return;a.push(n.valor);preorden(n.izquierdo,a);preorden(n.derecho,a);}
+  function inorden(n,a){if(!n)return;inorden(n.izquierdo,a);a.push(n.valor);inorden(n.derecho,a);}
+  function posorden(n,a){if(!n)return;posorden(n.izquierdo,a);posorden(n.derecho,a);a.push(n.valor);}
+  let vals=[3,1,2,4,5], hl=[], nomRec='';
+  function build(){const r=new Nodo(vals[0]);vals.slice(1).forEach(v=>agregar(r,v));return r;}
+  function getPos(n,x,y,sp,p){if(!n)return;p[n.valor]={x,y};if(n.izquierdo)getPos(n.izquierdo,x-sp,y+52,sp*.6,p);if(n.derecho)getPos(n.derecho,x+sp,y+52,sp*.6,p);}
+  function dibujar(){
+    const cv=document.getElementById('arb-cv');if(!cv)return;
+    cv.width=cv.offsetWidth||380;
+    const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,root=build(),pos={};
+    getPos(root,W/2,32,85,pos);ctx.clearRect(0,0,W,H);
+    function aristas(n){if(!n)return;['izquierdo','derecho'].forEach(k=>{if(n[k]){ctx.strokeStyle='#222';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(pos[n.valor].x,pos[n.valor].y);ctx.lineTo(pos[n[k].valor].x,pos[n[k].valor].y);ctx.stroke();aristas(n[k]);}});}
+    aristas(root);
+    function nodos(n){if(!n)return;const{x,y}=pos[n.valor],idx=hl.indexOf(n.valor),isH=idx>=0;ctx.beginPath();ctx.arc(x,y,17,0,Math.PI*2);ctx.fillStyle=isH?'#1a3a5a':'#111';ctx.fill();ctx.strokeStyle=isH?'#7ab4d4':'#2a2a2a';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle=isH?'#7ab4d4':'#555';ctx.font='bold 12px Consolas';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(n.valor,x,y);if(isH){ctx.fillStyle='#f1c40f';ctx.font='bold 9px Consolas';ctx.fillText(idx+1,x+14,y-13);}nodos(n.izquierdo);nodos(n.derecho);}
+    nodos(root);
+  }
+  let anim2;
+  function animar(arr,nom){if(anim2)clearInterval(anim2);hl=[];nomRec=nom;dibujar();let i=0;anim2=setInterval(()=>{if(i>=arr.length){clearInterval(anim2);return;}hl=arr.slice(0,i+1);dibujar();const el2=document.getElementById('arb-seq');if(el2)el2.textContent=hl.join(' → ');i++;},500);animT=anim2;}
+  function render(){
+    const root=build(),pre=[],ino=[],pos2=[];preorden(root,pre);inorden(root,ino);posorden(root,pos2);
+    el.innerHTML=`
+      <div class="viz-titulo">Arbol Binario — Recorridos</div>
+      <div class="viz-desc">basado en tu codigo preorden, inorden, posorden</div>
+      <div class="controles">
+        <input type="text" id="arb-vals" value="${vals.join(',')}" style="width:130px">
+        <button class="btn" onclick="arbRebuild()">reconstruir</button>
+      </div>
+      <canvas id="arb-cv" height="200" style="margin-bottom:8px"></canvas>
+      <div class="controles">
+        <button class="btn verde" onclick="arbAnim('pre')">preorden</button>
+        <button class="btn azul"  onclick="arbAnim('in')">inorden</button>
+        <button class="btn"       onclick="arbAnim('pos')">posorden</button>
+      </div>
+      <div style="font-size:11px;color:#555;margin-top:6px">${nomRec?'<span style="color:#7ab4d4">'+nomRec+':</span> ':''}<span id="arb-seq" style="color:#f1c40f">${hl.join(' → ')}</span></div>
+      <div style="font-size:10px;color:#333;margin-top:4px">pre: ${pre.join(',')}  |  in: ${ino.join(',')}  |  pos: ${pos2.join(',')}</div>
+    `;
+    dibujar();
+  }
+  window.arbRebuild=()=>{const v=document.getElementById('arb-vals').value.split(',').map(x=>parseInt(x.trim())).filter(x=>!isNaN(x));if(v.length){vals=v;hl=[];nomRec='';render();}};
+  window.arbAnim=(t)=>{const root=build(),arr=[];if(t==='pre')preorden(root,arr);else if(t==='in')inorden(root,arr);else posorden(root,arr);animar(arr,t==='pre'?'preorden':t==='in'?'inorden':'posorden');};
+  render();
+}
+
+// demo insertar y buscar en BST
+function vizBST(el) {
+  class N{constructor(k){this.clave=k;this.hijoIzquierdo=null;this.hijoDerecho=null;}}
+  function ins(r,k){if(!r)return new N(k);if(k<r.clave)r.hijoIzquierdo=ins(r.hijoIzquierdo,k);else if(k>r.clave)r.hijoDerecho=ins(r.hijoDerecho,k);return r;}
+  let vals=[1,13,11,5,9,10,12,3,6],root=null,hl=[],found=null;
+  function build(){root=null;vals.forEach(v=>root=ins(root,v));}
+  function getPos(n,x,y,sp,p){if(!n)return;p[n.clave]={x,y};if(n.hijoIzquierdo)getPos(n.hijoIzquierdo,x-sp,y+50,sp*.55,p);if(n.hijoDerecho)getPos(n.hijoDerecho,x+sp,y+50,sp*.55,p);}
+  function dibujar(){
+    const cv=document.getElementById('bst-cv');if(!cv||!root)return;
+    cv.width=cv.offsetWidth||380;
+    const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,pos={};getPos(root,W/2,30,100,pos);ctx.clearRect(0,0,W,H);
+    function aristas(n){if(!n)return;['hijoIzquierdo','hijoDerecho'].forEach(k=>{if(n[k]){ctx.strokeStyle='#222';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(pos[n.clave].x,pos[n.clave].y);ctx.lineTo(pos[n[k].clave].x,pos[n[k].clave].y);ctx.stroke();aristas(n[k]);}});}
+    aristas(root);
+    function nodos(n){if(!n)return;const{x,y}=pos[n.clave],isH=hl.includes(n.clave),isF=found===n.clave;ctx.beginPath();ctx.arc(x,y,16,0,Math.PI*2);ctx.fillStyle=isF?'#1a4a1a':isH?'#1a2a4a':'#111';ctx.fill();ctx.strokeStyle=isF?'#6dbf6d':isH?'#7ab4d4':'#2a2a2a';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle=isF?'#6dbf6d':isH?'#7ab4d4':'#555';ctx.font='bold 11px Consolas';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(n.clave,x,y);nodos(n.hijoIzquierdo);nodos(n.hijoDerecho);}
+    nodos(root);
+  }
+  function buscar(n,k,cam){if(!n)return false;cam.push(n.clave);if(n.clave===k)return true;if(k<n.clave)return buscar(n.hijoIzquierdo,k,cam);return buscar(n.hijoDerecho,k,cam);}
+  function render(){
+    build();
+    el.innerHTML=`
+      <div class="viz-titulo">Arbol BST</div>
+      <div class="viz-desc">basado en arbolitos_clase.py</div>
+      <canvas id="bst-cv" height="220" style="margin-bottom:8px"></canvas>
+      <div class="controles">
+        <input type="number" id="bst-i" placeholder="insertar" style="width:80px">
+        <button class="btn verde" onclick="bstIns()">insertar</button>
+        <input type="number" id="bst-b" placeholder="buscar" style="width:80px">
+        <button class="btn azul" onclick="bstBus()">buscar</button>
+        <button class="btn rojo" onclick="bstReset()">reset</button>
+      </div>
+      <div id="bst-msg" style="font-size:11px;color:#555;margin-top:6px;min-height:14px"></div>
+      <div style="font-size:10px;color:#333;margin-top:3px">valores: [${vals.join(', ')}]</div>
+    `;
+    dibujar();
+  }
+  window.bstIns=()=>{const v=parseInt(document.getElementById('bst-i').value);if(isNaN(v))return;if(vals.includes(v)){document.getElementById('bst-msg').innerHTML='<span style="color:#f47067">valor repetido</span>';return;}vals.push(v);hl=[];found=null;build();dibujar();document.getElementById('bst-msg').innerHTML='<span style="color:#6dbf6d">insertado: '+v+'</span>';document.getElementById('bst-i').value='';};
+  window.bstBus=()=>{const v=parseInt(document.getElementById('bst-b').value);if(isNaN(v))return;const cam=[];const ok=buscar(root,v,cam);hl=cam;found=ok?v:null;dibujar();document.getElementById('bst-msg').innerHTML=ok?'<span style="color:#6dbf6d">encontrado en '+cam.length+' pasos: '+cam.join(' → ')+'</span>':'<span style="color:#f47067">no existe. busque: '+cam.join(' → ')+'</span>';};
+  window.bstReset=()=>{vals=[1,13,11,5,9,10,12,3,6];hl=[];found=null;render();};
+  render();
+}
+
+// demo busqueda en anchura
+function vizBFS(el) {
+  const graph={'A':['B','C'],'B':['D','E'],'C':['F','G'],'D':[],'E':[],'F':[],'G':[]};
+  const pos={'A':{x:.5,y:.15},'B':{x:.28,y:.45},'C':{x:.72,y:.45},'D':{x:.14,y:.8},'E':{x:.42,y:.8},'F':{x:.58,y:.8},'G':{x:.86,y:.8}};
+  let visited=[],queue=[],recorrido=[],current=null;
+  function dibujar(){
+    const cv=document.getElementById('bfs-cv');if(!cv)return;
+    const W=cv.width,H=cv.height,ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+    const gp={};Object.keys(pos).forEach(k=>gp[k]={x:pos[k].x*W,y:pos[k].y*H});
+    Object.entries(graph).forEach(([n,nb])=>nb.forEach(v=>{ctx.strokeStyle='#1e1e1e';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(gp[n].x,gp[n].y);ctx.lineTo(gp[v].x,gp[v].y);ctx.stroke();}));
+    Object.entries(gp).forEach(([n,{x,y}])=>{const isV=visited.includes(n),isQ=queue.includes(n),isC=current===n;ctx.beginPath();ctx.arc(x,y,18,0,Math.PI*2);ctx.fillStyle=isC?'#3a2a00':isV?'#1a3a1a':isQ?'#1a1a3a':'#111';ctx.fill();ctx.strokeStyle=isC?'#f1c40f':isV?'#6dbf6d':isQ?'#7ab4d4':'#2a2a2a';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle=isC?'#f1c40f':isV?'#6dbf6d':isQ?'#7ab4d4':'#555';ctx.font='bold 13px Consolas';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(n,x,y);});
+    const ce=document.getElementById('bfs-cola'),re=document.getElementById('bfs-rec');
+    if(ce)ce.textContent=queue.join(' → ')||'—';if(re)re.textContent=recorrido.join(' → ')||'—';
+  }
+  let bfsQ,bfsV;
+  function bfsInit(){bfsQ=['A'];bfsV=new Set();visited=[];queue=['A'];recorrido=[];current=null;}
+  function bfsStep(){if(!bfsQ.length)return false;const node=bfsQ.shift();current=node;if(!bfsV.has(node)){bfsV.add(node);recorrido.push(node);graph[node].forEach(nb=>{if(!bfsV.has(nb)&&!bfsQ.includes(nb))bfsQ.push(nb);});}visited=[...bfsV];queue=[...bfsQ];return true;}
+  function render(){
+    el.innerHTML=`
+      <div class="viz-titulo">Busqueda en Anchura — BFS</div>
+      <div class="viz-desc">igual a tu funcion Busqueda_Anchura</div>
+      <canvas id="bfs-cv" height="200" style="margin-bottom:8px"></canvas>
+      <div style="font-size:10px;display:flex;gap:12px;color:#444;margin-bottom:6px">
+        <span style="color:#f1c40f">■ procesando</span><span style="color:#6dbf6d">■ visitado</span><span style="color:#7ab4d4">■ en cola</span>
+      </div>
+      <div style="font-size:11px;color:#444;margin-bottom:3px">cola: <span id="bfs-cola" style="color:#7ab4d4;font-family:Consolas">—</span></div>
+      <div style="font-size:11px;color:#444;margin-bottom:8px">recorrido: <span id="bfs-rec" style="color:#6dbf6d;font-family:Consolas">—</span></div>
+      <div class="controles">
+        <button class="btn verde" onclick="bfsStart()">iniciar</button>
+        <button class="btn azul" id="bfs-nb" onclick="bfsPaso()" disabled>siguiente paso</button>
+        <button class="btn" onclick="bfsAuto()">auto</button>
+      </div>
+    `;
+    const cv=document.getElementById('bfs-cv');cv.width=cv.offsetWidth||380;dibujar();
+  }
+  window.bfsStart=()=>{if(animT){clearInterval(animT);animT=null;}bfsInit();render();document.getElementById('bfs-nb').disabled=false;};
+  window.bfsPaso=()=>{if(!bfsStep())document.getElementById('bfs-nb').disabled=true;dibujar();};
+  window.bfsAuto=()=>{if(animT){clearInterval(animT);animT=null;return;}bfsInit();const cv=document.getElementById('bfs-cv');if(cv)cv.width=cv.offsetWidth||380;dibujar();animT=setInterval(()=>{if(!bfsStep()){clearInterval(animT);animT=null;dibujar();return;}dibujar();},700);};
+  render();
+}
+
+
+// demo algoritmo de prim
+function vizPrim(el) {
+  const grafo={0:[[2,20],[1,10]],1:[[0,10],[4,10],[3,50]],2:[[0,20],[3,20],[4,33]],3:[[2,20],[4,20],[5,2],[1,50]],4:[[2,33],[1,10],[3,20],[5,1]],5:[[4,1],[3,2]]};
+  const npos=[{x:.35,y:.15},{x:.12,y:.5},{x:.6,y:.5},{x:.35,y:.82},{x:.65,y:.15},{x:.82,y:.82}];
+  let steps=[],si=0;
+  function computeSteps(start){const vis=new Set(),heap=[[0,start,-1]],st=[];while(heap.length){heap.sort((a,b)=>a[0]-b[0]);const[w,u,from]=heap.shift();if(vis.has(u))continue;vis.add(u);const prev=st.length?[...st[st.length-1].mst]:[];const mst=from>=0?[...prev,[from,u,w]]:prev;st.push({visited:[...vis],mst,current:u});grafo[u].forEach(([v,pw])=>{if(!vis.has(v))heap.push([pw,v,u]);});}return st;}
+  function dibujar(s){
+    const cv=document.getElementById('prim-cv');if(!cv)return;
+    const W=cv.width,H=cv.height,ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+    const gp=npos.map(p=>({x:p.x*W,y:p.y*H}));
+    Object.entries(grafo).forEach(([u,nb])=>nb.forEach(([v,w])=>{if(parseInt(u)<v){ctx.strokeStyle='#1e1e1e';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gp[u].x,gp[u].y);ctx.lineTo(gp[v].x,gp[v].y);ctx.stroke();const mx=(gp[u].x+gp[v].x)/2,my=(gp[u].y+gp[v].y)/2;ctx.fillStyle='#333';ctx.font='9px Consolas';ctx.textAlign='center';ctx.fillText(w,mx,my-4);}}));
+    s.mst.forEach(([u,v])=>{ctx.strokeStyle='#6dbf6d';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(gp[u].x,gp[u].y);ctx.lineTo(gp[v].x,gp[v].y);ctx.stroke();});
+    gp.forEach(({x,y},i)=>{const isV=s.visited.includes(i),isC=s.current===i;ctx.beginPath();ctx.arc(x,y,16,0,Math.PI*2);ctx.fillStyle=isC?'#3a2a00':isV?'#1a3a1a':'#111';ctx.fill();ctx.strokeStyle=isC?'#f1c40f':isV?'#6dbf6d':'#2a2a2a';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle=isC?'#f1c40f':isV?'#6dbf6d':'#555';ctx.font='bold 12px Consolas';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(i,x,y);});
+  }
+  function render(){
+    const s=steps[si]||{visited:[],mst:[],current:-1};const peso=s.mst.reduce((a,[,,w])=>a+w,0);
+    el.innerHTML=`
+      <div class="viz-titulo">Algoritmo de Prim</div>
+      <div class="viz-desc">basado en tu codigo — arbol de expansion minima</div>
+      <div class="controles">
+        <span style="font-size:11px;color:#555">inicio:</span>
+        <select id="prim-s">${[0,1,2,3,4,5].map(i=>'<option value="'+i+'">nodo '+i+'</option>').join('')}</select>
+        <button class="btn verde" onclick="primCalc()">calcular</button>
+      </div>
+      <canvas id="prim-cv" height="220" style="margin-bottom:8px"></canvas>
+      <div class="info-fila">
+        <div class="info-caja"><div class="v" style="color:#6dbf6d">${s.mst.length}</div><div class="l">aristas MST</div></div>
+        <div class="info-caja"><div class="v" style="color:#f1c40f">${peso}</div><div class="l">peso total</div></div>
+        <div class="info-caja"><div class="v">${s.visited.length}/6</div><div class="l">visitados</div></div>
+      </div>
+      <div style="font-size:10px;color:#333;margin:4px 0">${s.mst.map(([u,v,w])=>u+'—'+v+'('+w+')').join(' | ')||'—'}</div>
+      <div class="controles">
+        <button class="btn" onclick="primPrev()">◀ ant</button>
+        <button class="btn azul" onclick="primNext()">sig ▶</button>
+        <button class="btn" onclick="primAuto()">auto</button>
+      </div>
+    `;
+    const cv=document.getElementById('prim-cv');cv.width=cv.offsetWidth||380;dibujar(s);
+  }
+  window.primCalc=()=>{if(animT){clearInterval(animT);animT=null;}steps=computeSteps(parseInt(document.getElementById('prim-s').value));si=0;render();};
+  window.primPrev=()=>{if(si>0){si--;const s=steps[si];const cv=document.getElementById('prim-cv');if(cv)dibujar(s);}};
+  window.primNext=()=>{if(si<steps.length-1){si++;const s=steps[si];const cv=document.getElementById('prim-cv');if(cv)dibujar(s);}};
+  window.primAuto=()=>{if(animT){clearInterval(animT);animT=null;return;}if(!steps.length){steps=computeSteps(0);si=0;}animT=setInterval(()=>{if(si>=steps.length-1){clearInterval(animT);animT=null;return;}si++;const s=steps[si];const cv=document.getElementById('prim-cv');if(cv)dibujar(s);},600);};
+  steps=computeSteps(0);render();
+}
+
+
+// demo cola circular interactiva
+function vizColaCircular(el) {
+  const CAP=5;let cola=Array(CAP).fill(null),fr=-1,fn=-1;
+  const vacia=()=>fr===-1,llena=()=>(fn+1)%CAP===fr;
+  function encolar(d){if(llena())return{ok:false,msg:'cola llena'};if(vacia()){fr=0;fn=0;}else{fn=(fn+1)%CAP;}cola[fn]=d;return{ok:true,msg:'encolado: '+d};}
+  function desencolar(){if(vacia())return{ok:false,msg:'cola vacia'};const d=cola[fr];cola[fr]=null;if(fr===fn){fr=-1;fn=-1;}else{fr=(fr+1)%CAP;}return{ok:true,msg:'desencolado: '+d};}
+  function render(){
+    const celdas=cola.map((v,i)=>{
+      let bor='#2a2a2a',col='#333',etiq='';
+      if(i===fr&&i===fn){bor='#9b59b6';col='#9b59b6';etiq='F=C';}
+      else if(i===fr){bor='#6dbf6d';col='#6dbf6d';etiq='F';}
+      else if(i===fn){bor='#f1c40f';col='#f1c40f';etiq='C';}
+      return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+        +'<div style="font-size:9px;color:'+col+';height:11px">'+etiq+'</div>'
+        +'<div style="width:48px;height:44px;background:#0a0a0a;border:1.5px solid '+bor+';border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Consolas;font-size:13px;font-weight:bold;color:'+(v?'#ccc':'#2a2a2a')+'">'+(v||'·')+'</div>'
+        +'<div style="font-size:9px;color:#333">['+i+']</div></div>';
+    }).join('<div style="color:#222;font-size:18px;margin-top:14px">›</div>');
+    el.innerHTML=`
+      <div class="viz-titulo">Cola Circular (cap=${CAP})</div>
+      <div class="viz-desc">frente=${fr}, final=${fn} — ${vacia()?'vacia':llena()?'llena':'normal'}</div>
+      <div style="display:flex;gap:6px;align-items:center;justify-content:center;margin:10px 0;flex-wrap:wrap">${celdas}</div>
+      <div style="font-size:10px;display:flex;gap:10px;color:#444;margin-bottom:8px">
+        <span style="color:#6dbf6d">■ frente</span><span style="color:#f1c40f">■ final</span><span style="color:#9b59b6">■ frente=final</span>
+      </div>
+      <div class="controles">
+        <input type="text" id="cc-v" placeholder="dato" style="width:70px">
+        <button class="btn verde" onclick="ccEnc()">encolar</button>
+        <button class="btn rojo"  onclick="ccDes()">desencolar</button>
+        <button class="btn"       onclick="ccRes()">reset</button>
+      </div>
+      <div class="log" id="cc-log"><span class="log-info">// operaciones aqui</span></div>
+    `;
+  }
+  window.ccEnc=()=>{const v=document.getElementById('cc-v').value.trim();if(!v)return;const r=encolar(v);addLog('cc-log',r.msg,r.ok?'log-ok':'log-err');document.getElementById('cc-v').value='';render();};
+  window.ccDes=()=>{const r=desencolar();addLog('cc-log',r.msg,r.ok?'log-ok':'log-err');render();};
+  window.ccRes=()=>{cola=Array(CAP).fill(null);fr=-1;fn=-1;addLog('cc-log','reset','log-info');render();};
+  encolar('T1');encolar('T2');encolar('T3');render();
+}
+
+
+// demo operaciones de pila
+function vizPila(el) {
+  let pila=[];
+  function render(){
+    const tam=pila.length,cima=tam?pila[tam-1]:'—';
+    el.innerHTML=`
+      <div class="viz-titulo">Pila — Operaciones basicas</div>
+      <div class="viz-desc">LIFO: ultimo en entrar, primero en salir</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:10px;color:#333;margin-bottom:5px">ESTADO</div>
+          <div style="min-height:110px;min-width:100px;border:1px dashed #1e1e1e;border-top:none;padding:5px;display:flex;flex-direction:column-reverse;gap:2px">
+            ${pila.map((v,i)=>'<div style="background:'+(i===tam-1?'#1a2a3a':'#0f0f0f')+';border:1px solid '+(i===tam-1?'#7ab4d4':'#1e1e1e')+';border-radius:2px;padding:5px 10px;font-family:Consolas;font-size:12px;color:'+(i===tam-1?'#7ab4d4':'#666')+';display:flex;justify-content:space-between;gap:8px">'+v+(i===tam-1?'<span style="font-size:9px">TOP</span>':'')+'</div>').join('')}
+            ${!tam?'<span style="color:#222;font-size:11px">vacia</span>':''}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#333;margin-bottom:5px">METODOS</div>
+          <div style="background:#0a0a0a;border:1px solid #1e1e1e;border-radius:2px;padding:8px;font-size:11px">
+            <div style="margin-bottom:4px">peek() = <span style="color:#f1c40f">${cima}</span></div>
+            <div style="margin-bottom:4px">size() = <span style="color:#7ab4d4">${tam}</span></div>
+            <div>is_empty() = <span style="color:${tam===0?'#6dbf6d':'#f47067'}">${tam===0?'True':'False'}</span></div>
+          </div>
+          <div class="controles" style="margin-top:8px">
+            <input type="text" id="p-v" placeholder="valor" style="width:70px">
+            <button class="btn verde" onclick="pPush()">push()</button>
+            <button class="btn rojo"  onclick="pPop()">pop()</button>
+          </div>
+        </div>
+      </div>
+      <div class="log" id="p-log"><span class="log-info">// operaciones aqui</span></div>
+    `;
+    document.getElementById('p-v').addEventListener('keydown',e=>{if(e.key==='Enter')pPush();});
+  }
+  window.pPush=()=>{const v=document.getElementById('p-v').value.trim();if(!v)return;pila.push(v);addLog('p-log','push('+v+') → size='+pila.length,'log-ok');document.getElementById('p-v').value='';render();};
+  window.pPop=()=>{if(!pila.length){addLog('p-log','pop() → pila vacia','log-err');return;}const v=pila.pop();addLog('p-log','pop() → salio: '+v,'log-ok');render();};
+  render();
+}
+
+
+// demo sala de asientos
+function vizAsientos(el) {
+  let sala=Array.from({length:6},()=>Array(6).fill(false)),sel=null;
+  function render(){
+    const tot=sala.flat().filter(Boolean).length;
+    el.innerHTML=`
+      <div class="viz-titulo">Sistema de Asientos</div>
+      <div class="viz-desc">clic en asiento para seleccionarlo. [R]=reservado, [_]=libre</div>
+      <div style="display:flex;gap:8px;font-size:10px;margin-bottom:8px">
+        <span style="color:#6dbf6d">■ libre</span><span style="color:#f47067">■ reservado</span><span style="color:#7ab4d4">■ seleccionado</span>
+      </div>
+      <div>
+        <div style="display:flex;gap:3px;margin-left:26px;margin-bottom:2px">
+          ${[1,2,3,4,5,6].map(c=>'<div style="width:34px;text-align:center;font-size:9px;color:#333">'+c+'</div>').join('')}
+        </div>
+        ${sala.map((fila,fi)=>'<div style="display:flex;gap:3px;align-items:center;margin-bottom:3px">'
+          +'<div style="width:20px;font-size:9px;color:#333;text-align:right;margin-right:3px">F'+(fi+1)+'</div>'
+          +fila.map((oc,ci)=>{const isSel=sel&&sel[0]===fi&&sel[1]===ci;return'<div style="width:34px;height:30px;background:'+(isSel?'#1a1a3a':oc?'#2a0a0a':'#111')+';border:1px solid '+(isSel?'#7ab4d4':oc?'#f47067':'#2a2a2a')+';border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:Consolas;font-size:11px;color:'+(isSel?'#7ab4d4':oc?'#f47067':'#444')+'" onclick="selSeat('+fi+','+ci+')">'+(oc?'R':'_')+'</div>';}).join('')
+          +'</div>').join('')}
+      </div>
+      ${sel?'<div style="background:#0f0f0f;border:1px solid #1e1e1e;border-radius:2px;padding:8px;margin:8px 0"><div style="font-size:11px;color:#888;margin-bottom:6px">F'+(sel[0]+1)+' C'+(sel[1]+1)+' — '+(sala[sel[0]][sel[1]]?'reservado':'libre')+'</div><div style="display:flex;gap:5px"><button class="btn verde" onclick="seatAct(\'r\')">reservar</button><button class="btn rojo" onclick="seatAct(\'l\')">liberar</button><button class="btn azul" onclick="seatAct(\'c\')">consultar</button><button class="btn" onclick="selSeat(null)">×</button></div></div>':''}
+      <div class="info-fila">
+        <div class="info-caja"><div class="v" style="color:#f47067">${tot}</div><div class="l">reservados</div></div>
+        <div class="info-caja"><div class="v" style="color:#6dbf6d">${36-tot}</div><div class="l">libres</div></div>
+      </div>
+      <div class="log" id="as-log"><span class="log-info">// acciones aqui</span></div>
+    `;
+  }
+  window.selSeat=(fi,ci)=>{sel=fi===null?null:[fi,ci];render();};
+  window.seatAct=(a)=>{if(!sel)return;const[fi,ci]=sel;if(a==='r'){sala[fi][ci]?addLog('as-log','(F'+(fi+1)+',C'+(ci+1)+') ya reservado','log-err'):(sala[fi][ci]=true,addLog('as-log','reservado (F'+(fi+1)+',C'+(ci+1)+')','log-ok'));}else if(a==='l'){!sala[fi][ci]?addLog('as-log','(F'+(fi+1)+',C'+(ci+1)+') ya libre','log-err'):(sala[fi][ci]=false,addLog('as-log','liberado (F'+(fi+1)+',C'+(ci+1)+')','log-ok'));}else{addLog('as-log','(F'+(fi+1)+',C'+(ci+1)+'): '+(sala[fi][ci]?'reservado':'libre'),'log-info');}sel=null;render();};
+  render();
+}
+
+
+// demo colas bancarias
+function vizColas(el) {
+  let saldos=[1000,1000,1000,1000,1000],hist=[];
+  function render(){
+    el.innerHTML=`
+      <div class="viz-titulo">Colas — Banco (FIFO)</div>
+      <div class="viz-desc">el primer elemento de la cola es el primero en ser procesado</div>
+      <div style="display:flex;gap:5px;align-items:center;margin:8px 0;flex-wrap:wrap">
+        <span style="font-size:10px;color:#6dbf6d">cabeza ›</span>
+        ${saldos.map((s,i)=>'<div style="background:#0f0f0f;border:1px solid '+(i===0?'#6dbf6d':'#1e1e1e')+';border-radius:2px;padding:6px 10px;text-align:center"><div style="font-family:Consolas;font-size:13px;font-weight:bold;color:#ccc">$'+s+'</div><div style="font-size:9px;color:#333">C'+(i+1)+'</div></div>'+(i<saldos.length-1?'<span style="color:#222;font-size:14px">›</span>':'')).join('')}
+      </div>
+      <div class="controles">
+        <span style="font-size:11px;color:#555">monto:</span>
+        <input type="number" id="q-m" value="200" step="100" style="width:80px">
+        <button class="btn rojo"  onclick="qRet()">retirar</button>
+        <button class="btn verde" onclick="qDep()">depositar</button>
+        <button class="btn"       onclick="qRes()">reset</button>
+      </div>
+      <div class="log" id="q-log">${hist.slice(-5).map(h=>'<div class="'+h.t+'">'+h.m+'</div>').join('')||'<span class="log-info">// historial aqui</span>'}</div>
+    `;
+  }
+  window.qRet=()=>{const m=parseInt(document.getElementById('q-m').value)||0;const v=saldos.shift();saldos.push(v-m);hist.push({t:'log-ok',m:'retiro $'+m+': '+v+' → '+(v-m)});render();};
+  window.qDep=()=>{const m=parseInt(document.getElementById('q-m').value)||0;const v=saldos.shift();saldos.push(v+m);hist.push({t:'log-info',m:'deposito $'+m+': '+v+' → '+(v+m)});render();};
+  window.qRes=()=>{saldos=[1000,1000,1000,1000,1000];hist=[];render();};
+  render();
+}
+
+// demo bicola (deque)
+function vizBicola(el) {
+  let bic=[1000,1000,1000,1000,1000],hist=[];
+  function render(){
+    el.innerHTML=`
+      <div class="viz-titulo">Bicola (Deque)</div>
+      <div class="viz-desc">opera por ambos extremos — retiro por cabeza, deposito por cola</div>
+      <div style="display:flex;gap:5px;align-items:center;margin:8px 0;flex-wrap:wrap">
+        <span style="font-size:14px;color:#6dbf6d">‹</span>
+        ${bic.map((v,i)=>'<div style="background:#0f0f0f;border:1px solid #1e1e1e;border-radius:2px;padding:6px 10px;text-align:center"><div style="font-family:Consolas;font-size:13px;font-weight:bold;color:#ccc">$'+v+'</div></div>'+(i<bic.length-1?'<span style="color:#222;font-size:12px">—</span>':'')).join('')}
+        <span style="font-size:14px;color:#f47067">›</span>
+      </div>
+      <div class="controles">
+        <span style="font-size:11px;color:#555">monto:</span>
+        <input type="number" id="bi-m" value="300" step="100" style="width:80px">
+        <button class="btn verde" onclick="biRet()">retiro (cabeza)</button>
+        <button class="btn rojo"  onclick="biDep()">deposito (cola)</button>
+        <button class="btn"       onclick="biRes()">reset</button>
+      </div>
+      <div class="log" id="bi-log">${hist.slice(-5).map(h=>'<div class="'+h.t+'">'+h.m+'</div>').join('')||'<span class="log-info">// historial aqui</span>'}</div>
+    `;
+  }
+  window.biRet=()=>{const m=parseInt(document.getElementById('bi-m').value)||0;const v=bic.shift();bic.push(v-m);hist.push({t:'log-ok',m:'retiro $'+m+' cabeza: '+v+' → '+(v-m)});render();};
+  window.biDep=()=>{const m=parseInt(document.getElementById('bi-m').value)||0;const v=bic.pop();bic.unshift(v+m);hist.push({t:'log-info',m:'deposito $'+m+' cola: '+v+' → '+(v+m)});render();};
+  window.biRes=()=>{bic=[1000,1000,1000,1000,1000];hist=[];render();};
+  render();
+}
+
+// agrega linea al log visual
+function addLog(id,msg,clase){const el=document.getElementById(id);if(!el)return;const d=document.createElement('div');d.className=clase;d.textContent='> '+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+</script>
+</body>
+</html>

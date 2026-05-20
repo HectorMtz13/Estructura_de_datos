@@ -1,0 +1,37 @@
+la razon por la cual decidi tomar esa decicion de realizarlo de esa manera fue que cai todo el ejercicio me indicaba que tenia que hacer
+por lo cual simplemente empece con un constructor en el cual va a recibir un valor
+Despues agrege un metodo para ir agregando valores hijos con un .append
+Luego agrege un metodo de mostrar, que este lo uqehace es mostrar la cadena de manera clara el diagrama de arbol , en el cual hara un salto de linea por cada valor hijo con su respectivo padre 
+despues, ya nomas le agregamos los datos (nombres) a nuestras ramas de arbol , ya unicamente agregamos los datos en sus respectivas ramas
+por ultimo, mostramos por completo el diagrama de arbol.
+
+-----------------------------------------------------------------------------------------------------------------
+Segundo ejercicio
+Por eso empecé creando un constructor que recibe un valor y define dos ramas, una izquierda y una derecha.
+Después agregué manualmente los nodos hijos, colocando valores menores a la izquierda y mayores a la derecha.
+Finalmente imprimí los valores de la raíz y sus hijos directos para comprobar que la estructura del árbol quedó bien formada.
+
+---------------------------------------------------------------------------------------------------------
+Tercer ejercicio
+Aquí la decisión fue aplicar el recorrido en inorden, ya que el ejercicio indicaba recorrer el árbol.
+Para lograrlo definí una función recursiva que primero visita el hijo izquierdo,
+luego imprime el valor del nodo actual y después recorre el hijo derecho.
+De esta manera se obtiene la secuencia ordenada de los valores.
+Al final, simplemente llamé a la función sobre la raíz para mostrar el recorrido completo.
+----------------------------------------------------------------------------------------------------------------------
+Cuarto ejercicio
+En este caso el ejercicio pedía trabajar con palabras y prefijos, por lo cual decidí implementar un Trie.
+Empecé con un constructor que guarda cada letra y una lista de hijos.
+Luego hice una función para insertar palabras, que va recorriendo letra por letra y creando nodos nuevos si no existen.
+Al terminar la palabra marco el nodo como final.
+Después agregué una función de búsqueda que localiza el prefijo y llama a otra que muestra todas las sugerencias posibles.
+Así, al insertar “mar”, “malo” y “mas”, al buscar “ma” se muestran todas las coincidencias.
+
+-------------------------------------------------------------------------------------------------------------------------
+ Quinto ejercicio
+
+La decisión aquí fue construir un árbol binario de búsqueda dinámico.
+Para eso definí un constructor que recibe un valor y dos ramas, izquierda y derecha.
+Luego hice una función de insertar que coloca cada nuevo valor en la posición correcta: si es menor va a la izquierda, si es mayor va a la derecha.
+Después inicialicé la raíz vacía y fui insertando los valores de la lista [50, 25, 75, 10, 30, 60, 90].
+Al final se obtiene un árbol ordenado que permite búsquedas rápidas y eficientes.
