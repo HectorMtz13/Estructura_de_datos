@@ -1,0 +1,4 @@
+El proyecto final se enceuntra en la carpeta templates
+y tambien el archivo server.py
+para correrlo debe de estar dentro de la carpeta estructura_de_datos y escribir python server.py
+gracias por todo profe
